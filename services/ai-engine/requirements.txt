@@ -1,4 +1,9 @@
 fastapi
 uvicorn
-pydantic
 pandas
+scikit-learn
+joblib
+pydantic
+numpy
+matplotlib
+seaborn

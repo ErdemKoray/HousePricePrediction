@@ -1,46 +1,67 @@
 import pandas as pd
-import tensorflow_decision_forests as tfdf
-import tensorflow as tf
-import os
 import numpy as np
+import joblib
+import os
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
 
-# Yollar (DÜZELTİLDİ)
-DATA_PATH = "data/cleaned_train.csv"
-MODEL_DIR = "saved_model/my_random_forest"
+# Veriyi Oku
+DATA_PATH = "data/istanbul_cleaned.csv"
+MODEL_PATH = "saved_model/istanbul_model.pkl"
 
-def train_model():
-    print(f"🔄 Temiz veri yükleniyor: {DATA_PATH}")
-    
-    if not os.path.exists(DATA_PATH):
-        print("❌ Hata: Temiz veri bulunamadı.")
-        return
+if not os.path.exists(DATA_PATH):
+    print("❌ Hata: Veri dosyası bulunamadı.")
+    exit()
 
-    dataset_df = pd.read_csv(DATA_PATH)
-    
-    cat_cols = ['KitchenQual', 'CentralAir', 'HeatingQC', 'Neighborhood', 'BldgType', 'HouseStyle']
-    for col in cat_cols:
-        if col in dataset_df.columns:
-            dataset_df[col] = dataset_df[col].astype(str)
+data = pd.read_csv(DATA_PATH)
 
-    print("🛠️ Eğitim seti hazırlanıyor...")
-    
-    def split_dataset(dataset, test_ratio=0.30):
-        test_indices = np.random.rand(len(dataset)) < test_ratio
-        return dataset[~test_indices], dataset[test_indices]
+# --- ÖZELLİK AYRIMI ---
+# Yazı olan sütunları (Kategorik) ve Sayı olanları ayıralım
+# Mahalle'yi performans için çıkarıyorum (Çok fazla çeşit var, eğitimi yavaşlatır)
+categorical_features = ['Sehir', 'Ilce', 'KatTipi'] 
+numeric_features = ['NetAlan', 'OdaSayisi', 'SalonSayisi', 'BinaYasi', 'BalkonSayisi', 'SiteIcerisinde']
 
-    train_ds_pd, valid_ds_pd = split_dataset(dataset_df)
-    label = 'SalePrice'
-    train_ds = tfdf.keras.pd_dataframe_to_tf_dataset(train_ds_pd, label=label, task=tfdf.keras.Task.REGRESSION)
-    valid_ds = tfdf.keras.pd_dataframe_to_tf_dataset(valid_ds_pd, label=label, task=tfdf.keras.Task.REGRESSION)
+# Hedef ve Girdiler
+X = data[categorical_features + numeric_features]
+y = data['Fiyat']
 
-    print("🚀 Model Eğitimi Başlıyor...")
-    model = tfdf.keras.RandomForestModel(task=tfdf.keras.Task.REGRESSION)
-    model.compile(metrics=["mse"])
-    model.fit(train_ds)
+# Eğitim ve Test setine ayır
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    print("💾 Model Kaydediliyor...")
-    model.save(MODEL_DIR)
-    print(f"✅ Başarılı! Model kaydedildi: {MODEL_DIR}")
+print(f"📊 Veri Hazır. Eğitim Boyutu: {X_train.shape}")
 
-if __name__ == "__main__":
-    train_model()
+# --- PIPELINE KURULUMU (OTOMATİK DÖNÜŞÜM) ---
+# 1. Kategorik verileri (Yazı) -> Sayıya (OneHot) çevir
+# handle_unknown='ignore': Eğitimde görmediği yeni bir ilçe gelirse hata verme
+categorical_transformer = OneHotEncoder(handle_unknown='ignore', sparse_output=False)
+
+# 2. İşleyiciyi hazırla
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('cat', categorical_transformer, categorical_features),
+        ('num', 'passthrough', numeric_features) # Sayılara dokunma, olduğu gibi geçsin
+    ]
+)
+
+# 3. Pipeline: Önce İşle -> Sonra Eğit
+model = Pipeline(steps=[
+    ('preprocessor', preprocessor),
+    ('regressor', RandomForestRegressor(n_estimators=100, random_state=42))
+])
+
+# --- EĞİTİM ---
+print("🚀 Model Eğitimi Başlıyor...")
+model.fit(X_train, y_train)
+
+# --- SKORLAMA ---
+score = model.score(X_test, y_test)
+print(f"\n📈 MODEL BAŞARI SKORU (R2): %{score*100:.2f}")
+
+# --- KAYDET ---
+print("💾 Model Kaydediliyor...")
+os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
+joblib.dump(model, MODEL_PATH)
+print(f"✅ İşlem Tamam! Model: {MODEL_PATH}")
