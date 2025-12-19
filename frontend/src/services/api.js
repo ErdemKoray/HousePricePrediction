@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 
-const API_BASE_URL = 'http://localhost:5220/api/HousePrice'; 
+const API_BASE_URL = 'http://localhost:5001/api/HousePrice'; 
 
 const api = axios.create({
     baseURL: API_BASE_URL,
