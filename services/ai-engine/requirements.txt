@@ -7,3 +7,6 @@ pydantic
 numpy
 matplotlib
 seaborn
+xgboost
+lightgbm
+catboost

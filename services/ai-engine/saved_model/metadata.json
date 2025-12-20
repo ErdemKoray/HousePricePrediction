@@ -1,0 +1,27 @@
+{
+    "active_model": "CatBoost",
+    "training_date": "2025-12-19 21:21:27",
+    "best_score_r2": 0.8186,
+    "all_results": {
+        "Random Forest": {
+            "r2_score": 0.8031,
+            "mae": 507367.0
+        },
+        "XGBoost": {
+            "r2_score": 0.7113,
+            "mae": 551487.0
+        },
+        "LightGBM": {
+            "r2_score": 0.7951,
+            "mae": 536154.0
+        },
+        "CatBoost": {
+            "r2_score": 0.8186,
+            "mae": 603903.0
+        },
+        "Linear Ridge": {
+            "r2_score": 0.5839,
+            "mae": 867426.0
+        }
+    }
+}

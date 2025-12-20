@@ -1,59 +1,61 @@
+from fastapi import FastAPI, HTTPException
 import joblib
 import pandas as pd
+import json
 import os
-from fastapi import FastAPI, HTTPException
-from app.schemas import HouseFeatures
+from .schemas import HouseFeatures, PredictionResponse, ModelInfoResponse
 
-app = FastAPI(title="Istanbul House Price Prediction API")
+app = FastAPI(title="House Price Prediction API")
 
-# Model Yolu
+# Dosya Yolları
 MODEL_PATH = "saved_model/istanbul_model.pkl"
-model_pipeline = None
+METADATA_PATH = "saved_model/metadata.json"
 
-@app.on_event("startup")
-def load_model():
-    global model_pipeline
-    try:
-        if os.path.exists(MODEL_PATH):
-            model_pipeline = joblib.load(MODEL_PATH)
-            print(f"✅ Model başarıyla yüklendi: {MODEL_PATH}")
-        else:
-            print(f"⚠️ Hata: Model dosyası bulunamadı! Lütfen eğitimi çalıştırın.")
-    except Exception as e:
-        print(f"❌ Model yüklenirken kritik hata: {e}")
+# Modeli Başlangıçta Yükle
+model = None
+try:
+    if os.path.exists(MODEL_PATH):
+        model = joblib.load(MODEL_PATH)
+        print("✅ Model yüklendi.")
+    else:
+        print("⚠️ Uyarı: Model dosyası bulunamadı, lütfen eğitimi başlatın.")
+except Exception as e:
+    print(f"❌ Model yüklenirken hata: {e}")
 
 @app.get("/")
-def health_check():
-    return {
-        "status": "running", 
-        "model_loaded": model_pipeline is not None,
-        "score": "R2 ~0.80"
-    }
+def read_root():
+    return {"message": "House Price Prediction AI Engine is Running! 🚀"}
 
-@app.post("/predict")
+@app.post("/predict", response_model=PredictionResponse)
 def predict_price(features: HouseFeatures):
-    if not model_pipeline:
-        raise HTTPException(status_code=500, detail="Model yüklü değil.")
+    if not model:
+        raise HTTPException(status_code=500, detail="Model yüklenemedi.")
     
+    # Gelen veriyi DataFrame'e çevir
+    input_data = pd.DataFrame([features.dict()])
+    
+    # Model beklediği sütunları seçer (fazlalıkları atar)
     try:
-        # 1. Gelen veriyi (Pydantic) -> Sözlüğe çevir
-        data_dict = features.dict()
-        
-        # 2. Sözlüğü -> DataFrame'e çevir (Tek satırlık)
-        # Scikit-Learn Pipeline sütun isimlerini görmek ister
-        df_input = pd.DataFrame([data_dict])
-        
-        # 3. Tahmin Yap
-        prediction = model_pipeline.predict(df_input)
-        
-        # 4. Sonucu Döndür
-        estimated_price = float(prediction[0])
+        prediction = model.predict(input_data)
+        price = float(prediction[0])
         
         return {
-            "estimated_price": estimated_price,
-            "currency": "TL",
-            "model_version": "v1-random-forest"
+            "estimated_price": round(price, 2),
+            "currency": "TL/Euro",
+            "model_version": "v2.0-champion"
         }
-
     except Exception as e:
-        return {"error": str(e)}
+        raise HTTPException(status_code=500, detail=f"Tahmin hatası: {str(e)}")
+
+# --- YENİ ENDPOINT: Model Detayları ---
+@app.get("/model-info", response_model=ModelInfoResponse)
+def get_model_info():
+    if not os.path.exists(METADATA_PATH):
+        raise HTTPException(status_code=404, detail="Model eğitim verisi (metadata) bulunamadı.")
+    
+    try:
+        with open(METADATA_PATH, "r") as f:
+            data = json.load(f)
+        return data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Veri okunurken hata: {str(e)}")
