@@ -1,15 +1,18 @@
-
+# Python imajını çek
 FROM python:3.9-slim
 
-WORKDIR /app
+# Çalışma dizinini ayarla (Container içinde '/project' dedik ki karışıklık olmasın)
+WORKDIR /project
 
-RUN apt-get update && apt-get install -y libgomp1 && rm -rf /var/lib/apt/lists/*
-# --------------------------
-
+# Önce gereksinimleri kopyala ve kur (Cache avantajı için)
 COPY requirements.txt .
-
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Şimdi TÜM klasörleri (app, data, ml, saved_model) kopyala
 COPY . .
 
+# KRİTİK NOKTA:
+# Senin main.py dosyan "app" klasörünün içinde olduğu için
+# uvicorn'a "app.main:app" dememiz gerekiyor.
+# --host 0.0.0.0 ile dışarıya açıyoruz.
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "5000"]

@@ -9,8 +9,10 @@ services:
     container_name: house-price-ai
     ports:
       - "5005:5000"
-    volumes:
-      - ./services/ai-engine:/app
+    # KRİTİK DÜZELTME: Volumes satırını iptal ettik.
+    # Böylece Dockerfile içinde ayarladığımız doğru dosya yapısı korunacak.
+    # volumes:
+    #   - ./services/ai-engine:/app 
     networks:
       - house-network
 
@@ -23,8 +25,9 @@ services:
     ports:
       - "5001:8080"
     environment:
-      # Dikkat: Docker içinde birbirleriyle konuşurken port hala 5432 (iç hat)
+      # Docker ağı içinde veritabanına erişim (Host=db)
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=HouseDb;Username=postgres;Password=Your_password123;
+      # Python servisine erişim (http://servis-adı:iç-port)
       - AiServiceUrl=http://ai-engine:5000
     depends_on:
       - ai-engine
@@ -41,11 +44,17 @@ services:
       - POSTGRES_PASSWORD=Your_password123
       - POSTGRES_DB=HouseDb
     ports:
-      # SOL TARAFI DEĞİŞTİRDİK: Bilgisayarının 5435 portunu, Container'ın 5432 portuna bağladık.
+      # Senin bilgisayarında 5435, içeride standart 5432
       - "5435:5432"
+    # Verilerin container silinse bile kaybolmaması için volume ekledim (Opsiyonel ama önerilir)
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - house-network
 
 networks:
   house-network:
     driver: bridge
+
+volumes:
+  postgres_data:

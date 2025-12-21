@@ -3,10 +3,15 @@ import joblib
 import pandas as pd
 import json
 import os
-from .schemas import HouseFeatures, PredictionResponse, ModelInfoResponse
+
+# Görseldeki yapıya göre schemas.py main.py'ın yanında.
+# Bu yüzden nokta (.) ile import ediyoruz.
+from .schemas import HouseFeatures, PredictionResponse ,ModelInfoResponse
 
 app = FastAPI(title="House Price Prediction API")
 
+# Dosya yolları (Container'da /project dizinindeyiz, klasörler yanımızda)
+# Bir üst dizine çıkmaya gerek yok, çünkü komutu /project'ten çalıştırıyoruz.
 # Dosya Yolları
 MODEL_PATH = "saved_model/istanbul_model.pkl"
 METADATA_PATH = "saved_model/metadata.json"
