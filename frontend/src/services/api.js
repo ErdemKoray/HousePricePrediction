@@ -1,31 +1,26 @@
-// src/services/api.js
 import axios from 'axios';
 
+// Backend Docker üzerinde 5000 portunda çalışıyor
+const API_URL = 'http://localhost:5001/api/houseprice';
 
-const API_BASE_URL = 'http://localhost:5001/api/HousePrice'; 
-
-const api = axios.create({
-    baseURL: API_BASE_URL,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-});
-
-/**
- * Konut özellikleri üzerinden fiyat tahmini yapan POST isteği.
- * @param {object} features - HouseFeaturesDto şemasına uygun konut özellikleri.
- * @returns {Promise<{estimated_price: number, currency: string}>}
- */
+// 1. Fiyat Tahmin Fonksiyonu
 export const predictPrice = async (features) => {
     try {
-        const response = await api.post('/predict', features);
-        // Core Backend'in dönüştürdüğü sonucu döndür
-        return response.data; 
+        const response = await axios.post(`${API_URL}/predict`, features);
+        return response.data;
     } catch (error) {
-        console.error("Tahmin API Hatası:", error);
-        // Hata durumunda, hatayı yukarıya fırlatıyoruz ki form yakalayabilsin
+        console.error("Tahmin Hatası:", error);
         throw error;
     }
 };
 
-export default api;
+// 2. Model Bilgisi Çekme Fonksiyonu (Önceki hatayı çözen kısım burası)
+export const getModelInfo = async () => {
+    try {
+        const response = await axios.get(`${API_URL}/model-info`);
+        return response.data;
+    } catch (error) {
+        console.error("Model Bilgisi Hatası:", error);
+        return null; // Hata olursa null dön, uygulamayı bozma
+    }
+};
