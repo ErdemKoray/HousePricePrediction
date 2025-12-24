@@ -3,7 +3,6 @@ import os
 import random
 import numpy as np
 
-# Yollar
 RAW_DATA_PATH = "data/processed_turkish_house_sales.csv"
 CLEAN_DATA_PATH = "data/istanbul_cleaned.csv"
 
@@ -30,24 +29,20 @@ def process_data():
     df = pd.read_csv(RAW_DATA_PATH)
     df.columns = df.columns.str.strip()
 
-    # 1. GEREKSİZLERİ SİL
     cols_to_drop = ['satici_tip', 'SaticiTipi', 'Tarih', 'IlanTarihi']
     for col in cols_to_drop:
         if col in df.columns:
             df.drop(columns=[col], inplace=True)
     
-    # 2. ODA AYRIŞTIRMA
     if 'Oda_Sayisi' in df.columns:
         split_data = df['Oda_Sayisi'].apply(split_oda_salon).tolist()
         df['OdaSayisi'] = [x[0] for x in split_data]
         df['SalonSayisi'] = [x[1] for x in split_data]
         df.drop(columns=['Oda_Sayisi'], inplace=True)
 
-    # 3. İSİM DÜZELTME
     rename_map = {'Metrekare': 'NetAlan', 'il': 'Sehir', 'Ilce': 'Ilce', 'Mahalle': 'Mahalle', 'fiyat': 'Fiyat'}
     df.rename(columns=rename_map, inplace=True)
 
-    # 4. MAHALLE DOLDURMA
     if 'Ilce' in df.columns and 'Mahalle' in df.columns:
         valid_data = df.dropna(subset=['Mahalle'])
         valid_data = valid_data[valid_data['Mahalle'] != 'Bilinmiyor']
@@ -62,7 +57,6 @@ def process_data():
             return mh
         df['Mahalle'] = df.apply(fill_mahalle, axis=1)
 
-    # 5. BİNA YAŞI TÜRETME
     df['NetAlan'] = df['NetAlan'].replace(0, 1)
     df['BirimFiyat'] = df['Fiyat'] / df['NetAlan']
     df['IlceMedyan'] = df.groupby('Ilce')['BirimFiyat'].transform('median')
@@ -76,7 +70,6 @@ def process_data():
         else: return random.randint(26, 30)
     df['BinaYasi'] = df['FiyatSkoru'].apply(ata_siki_yas)
 
-    # 6. BALKON SAYISI TÜRETME
     def ata_balkon(row):
         alan = row['NetAlan']
         oda = row['OdaSayisi']
@@ -86,7 +79,6 @@ def process_data():
         else: return random.choices([1, 2, 3], weights=[50, 45, 5])[0]
     df['BalkonSayisi'] = df.apply(ata_balkon, axis=1)
 
-    # 7. SİTE İÇERİSİNDE Mİ?
     site_ilceleri = ['Başakşehir', 'Beylikdüzü', 'Esenyurt', 'Ataşehir', 'Çekmeköy', 'Sancaktepe', 'Tuzla']
     def ata_site_durumu(row):
         ilce = str(row['Ilce'])
@@ -102,34 +94,23 @@ def process_data():
         return random.choices([1, 0], weights=[prob, 100-prob])[0]
     df['SiteIcerisinde'] = df.apply(ata_site_durumu, axis=1)
 
-    # --- 8. KAT TİPİ (NORMAL / DUBLEX / TRIPLEX) - YENİ ---
     print("🏠 Oda ve Alana göre Kat Tipi (Dublex/Normal) atanıyor...")
     
     def ata_kat_tipi(row):
         oda = row['OdaSayisi']
         salon = row['SalonSayisi']
         alan = row['NetAlan']
-        
-        # Tripleks Mantığı: Çok büyük, çok odalı
         if oda >= 6 or alan > 280:
-            # %70 Tripleks, %30 Dubleks
             return random.choices(['Tripleks', 'Dubleks'], weights=[70, 30])[0]
-            
-        # Dubleks Mantığı: Büyük, çok odalı veya Çift Salonlu
         elif (oda >= 4.5) or (alan > 170) or (salon >= 1.5):
-            # %60 Dubleks, %40 Geniş Normal Daire
             return random.choices(['Dubleks', 'Normal'], weights=[60, 40])[0]
-            
-        # Standart Daire
         else:
             return 'Normal'
 
     df['KatTipi'] = df.apply(ata_kat_tipi, axis=1)
 
-    # Temizlik
     df.drop(columns=['BirimFiyat', 'IlceMedyan', 'FiyatSkoru'], inplace=True)
 
-    # Kaydet
     df.to_csv(CLEAN_DATA_PATH, index=False)
     print(f"✅ Başarılı! Kaydedildi: {CLEAN_DATA_PATH}")
     print(f"   Kat Tipi Dağılımı: {df['KatTipi'].value_counts().to_dict()}")

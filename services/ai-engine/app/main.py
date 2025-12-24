@@ -4,19 +4,13 @@ import pandas as pd
 import json
 import os
 
-# Görseldeki yapıya göre schemas.py main.py'ın yanında.
-# Bu yüzden nokta (.) ile import ediyoruz.
-from .schemas import HouseFeatures, PredictionResponse ,ModelInfoResponse
+from .schemas import HouseFeatures, PredictionResponse, ModelInfoResponse
 
 app = FastAPI(title="House Price Prediction API")
 
-# Dosya yolları (Container'da /project dizinindeyiz, klasörler yanımızda)
-# Bir üst dizine çıkmaya gerek yok, çünkü komutu /project'ten çalıştırıyoruz.
-# Dosya Yolları
 MODEL_PATH = "saved_model/istanbul_model.pkl"
 METADATA_PATH = "saved_model/metadata.json"
 
-# Modeli Başlangıçta Yükle
 model = None
 try:
     if os.path.exists(MODEL_PATH):
@@ -36,10 +30,8 @@ def predict_price(features: HouseFeatures):
     if not model:
         raise HTTPException(status_code=500, detail="Model yüklenemedi.")
     
-    # Gelen veriyi DataFrame'e çevir
     input_data = pd.DataFrame([features.dict()])
     
-    # Model beklediği sütunları seçer (fazlalıkları atar)
     try:
         prediction = model.predict(input_data)
         price = float(prediction[0])
@@ -52,7 +44,6 @@ def predict_price(features: HouseFeatures):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Tahmin hatası: {str(e)}")
 
-# --- YENİ ENDPOINT: Model Detayları ---
 @app.get("/model-info", response_model=ModelInfoResponse)
 def get_model_info():
     if not os.path.exists(METADATA_PATH):

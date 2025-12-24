@@ -4,7 +4,6 @@ namespace Presentation.API.Models;
 
 public class HousePredictionResponse
 {
-    // Python'dan "estimated_price" olarak geliyor, C#'ta "EstimatedPrice" olsun
     [JsonPropertyName("estimated_price")]
     public double EstimatedPrice { get; set; }
 
