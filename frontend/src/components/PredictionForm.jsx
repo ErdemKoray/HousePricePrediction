@@ -32,7 +32,6 @@ const PredictionForm = () => {
     const [districts, setDistricts] = useState([]);
     const [neighborhoods, setNeighborhoods] = useState([]);
 
-    // Kayan yıldızların konfigürasyonu
     const stars = Array.from({ length: 5 }).map((_, i) => {
         const isRTL = Math.random() > 0.5;
         return {
@@ -107,7 +106,7 @@ const PredictionForm = () => {
 
     return (
         <div className="flex w-full h-screen overflow-hidden bg-white">
-            {/* Özel CSS Animasyonları */}
+            
             <style>{`
                 .shooting-star-base {
                     position: absolute;
@@ -140,7 +139,7 @@ const PredictionForm = () => {
                     width: 300px; height: 1px; background: linear-gradient(90deg, white, transparent);
                 }
 
-                /* AĞAÇ SALLANMA EFEKTİ (YENİ EKLENDİ) */
+               
                 .tree-sway {
                     transform-origin: bottom center;
                     animation-name: sway;
@@ -156,7 +155,7 @@ const PredictionForm = () => {
                 }
             `}</style>
             
-            {/* --- SOL PANEL: FORM --- */}
+            
             <div className="w-full md:w-5/12 lg:w-4/12 h-full bg-white flex flex-col border-r border-gray-100 shadow-xl z-20 overflow-y-auto custom-scrollbar">
                 <div className="p-6 md:p-8 flex-grow flex flex-col justify-center">
                     <div className="mb-8 border-b border-gray-100 pb-6">
@@ -174,7 +173,7 @@ const PredictionForm = () => {
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-5">
-                        {/* Konum */}
+                        
                         <div className="space-y-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
                             <h3 className="text-xs font-bold text-gray-400 uppercase flex items-center"><MapPin size={12} className="mr-1"/> Lokasyon</h3>
                             <div className="grid grid-cols-2 gap-3">
@@ -200,7 +199,7 @@ const PredictionForm = () => {
                             </div>
                         </div>
 
-                        {/* Özellikler */}
+                        
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className={labelClasses}>Net Alan (m²)</label>
@@ -264,10 +263,10 @@ const PredictionForm = () => {
                 </div>
             </div>
 
-            {/* --- SAĞ PANEL --- */}
+           
             <div className="hidden md:flex w-7/12 lg:w-8/12 h-full bg-slate-900 relative overflow-hidden items-center justify-center">
                 
-                {/* 1. Kayan Yıldızlar */}
+                
                 {stars.map((star) => (
                     <div 
                         key={star.id} 
@@ -276,20 +275,20 @@ const PredictionForm = () => {
                     ></div>
                 ))}
 
-                {/* Kar Yağışı */}
+               
                 <Snowfall 
                     color="rgba(255, 255, 255, 0.7)" 
                     snowflakeCount={120} 
                     style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1 }}
                 />
 
-                {/* Arka Plan */}
+             
                 <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 via-blue-950 to-slate-950 z-0"></div>
                 <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-indigo-600 rounded-full mix-blend-screen filter blur-[150px] opacity-20 animate-pulse z-0"></div>
                 <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-600 rounded-full mix-blend-screen filter blur-[150px] opacity-20 animate-pulse delay-700 z-0"></div>
                 <div className="absolute inset-0 opacity-5 z-0" style={{backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '40px 40px'}}></div>
 
-                {/* Ana İçerik */}
+           
                 <div className="relative z-30 w-full max-w-2xl px-8 text-center pb-20">
                     {!result && !loading && (
                         <div className="animate-fade-in-up">
@@ -341,10 +340,10 @@ const PredictionForm = () => {
                     )}
                 </div>
 
-                {/* --- MASKOTLAR & SÜSLEMELER --- */}
+              
                 
-                {/* Kardan Adam (SOLDA) */}
-                <div className="absolute bottom-[6.25rem] left-16 z-20 pointer-events-none animate-fade-in-up delay-500">
+             
+                <div className="absolute bottom-[4.75rem] left-16 z-20 pointer-events-none animate-fade-in-up delay-500">
                     <img 
                         src="https://cdn-icons-png.flaticon.com/512/3912/3912767.png" 
                         alt="Cute Snowman" 
@@ -352,10 +351,9 @@ const PredictionForm = () => {
                     />
                 </div>
 
-                {/* SALLANAN AĞAÇLAR (GÜNCELLENDİ) */}
                 <div className="absolute bottom-[70px] right-4 z-40 flex items-end gap-6 pointer-events-none animate-fade-in-up delay-700">
 
-                    {/* Ağaç 1 (Karlı) - Orta Boy */}
+                   
                     <div className="relative top-[2px] left-[-4px]">
                         <img 
                             src="https://cdn-icons-png.flaticon.com/512/9454/9454285.png" 
@@ -365,7 +363,7 @@ const PredictionForm = () => {
                         />
                     </div>
 
-                    {/* Ağaç 2 (Süslü) - Büyük Boy */}
+                    
                     <div className="relative top-[-11px] left-[2px] z-10">
                         <img 
                             src="https://cdn-icons-png.flaticon.com/512/1328/1328357.png" 
@@ -375,7 +373,7 @@ const PredictionForm = () => {
                         />
                     </div>
 
-                    {/* Ağaç 3 (Karlı) - Büyük Boy */}
+             
                     <div className="relative top-[-35px] left-[6px]">
                         <img 
                             src="https://cdn-icons-png.flaticon.com/512/9454/9454285.png" 
@@ -385,7 +383,7 @@ const PredictionForm = () => {
                         />
                     </div>
 
-                    {/* Ağaç 4 (Süslü) - Küçük Boy */}
+               
                     <div className="relative top-[-50px] left-[-2px]">
                         <img 
                             src="https://cdn-icons-png.flaticon.com/512/1328/1328357.png" 
@@ -397,7 +395,6 @@ const PredictionForm = () => {
 
                 </div>
 
-                {/* Alt Kar Birikintisi (SVG) */}
                 <div className="absolute bottom-0 left-0 w-full z-5 pointer-events-none">
                     <svg className="w-full h-auto translate-y-1 scale-105" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
                         <path fill="#ffffff" fillOpacity="1.0" d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,224C672,245,768,267,864,261.3C960,256,1056,224,1152,202.7C1248,181,1344,171,1392,165.3L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
@@ -406,7 +403,6 @@ const PredictionForm = () => {
                     <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-white via-white/50 to-transparent blur-2xl"></div>
                 </div>
 
-                {/* --- DETAY MODALI (POPUP) --- */}
                 {showDetails && modelInfo && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={() => setShowDetails(false)}></div>
