@@ -17,10 +17,7 @@ public class HousePriceController : ControllerBase
         _configuration = configuration;
     }
 
-    // --- 1. FİYAT TAHMİN ENDPOINT'İ (POST) ---
     [HttpPost("predict")]
-    // DİKKAT: Buradaki HouseFeaturesDto senin Models klasöründe HousePrediction.cs olabilir.
-    // Eğer hata alırsan burayı kontrol ederiz. Şimdilik HouseFeaturesDto varsayıyorum.
     public async Task<IActionResult> Predict([FromBody] HouseFeaturesDto features)
     {
         try
@@ -40,7 +37,6 @@ public class HousePriceController : ControllerBase
             
             var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             
-            // DÜZELTME BURADA: Artık HousePredictionResponse kullanıyoruz
             var result = JsonSerializer.Deserialize<HousePredictionResponse>(rawJson, options);
             
             return Ok(result);
@@ -51,7 +47,6 @@ public class HousePriceController : ControllerBase
         }
     }
 
-    // --- 2. MODEL BİLGİSİ ENDPOINT'İ (GET) ---
     [HttpGet("model-info")]
     public async Task<IActionResult> GetModelInfo()
     {
